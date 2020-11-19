@@ -7,19 +7,18 @@ public class PlayerController : MonoBehaviour
     public moveMode MoveMode = moveMode.FixedStick;
     public enum viewMode { FixedStick, DinamicStick, FloatingStick, Swipe };
     public viewMode ViewMode = viewMode.FixedStick;
-    public GameObject EventTriggerSwipeArea;
 
     public VariableJoystick MoveStick, ViewStick;
 
     public int Sensitivity = 100, MoveSpeed = 10;
     public Transform CameraTarget;
 
-    bool isGround = false;
-    bool swipeTouched = false;
+    bool isGround = false, isTouched = false;
     float yRotation;
     public static Vector3 MoveVector;
-    public static Vector2 ViewVector;
+    public static Vector2 ViewVector, StartSwipe;
     Rigidbody rb;
+    Touch tch;
 
     private void Start()
     {
@@ -28,44 +27,56 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // move
+        #region moving
         rb.velocity = transform.forward * MoveStick.Vertical * MoveSpeed +
             transform.right * MoveStick.Horizontal * MoveSpeed + 
             rb.velocity.y * transform.up;
-
-        // view
-        if (ViewMode == viewMode.Swipe)
+        #endregion
+        #region viewing
+        if (ViewMode == viewMode.Swipe && isTouched)
         {
-            /*if (tch.phase == TouchPhase.Began) swipeStartPos = tch.rawPosition;
+            if (Input.touchCount == 1 && Input.GetTouch(0).rawPosition.x > Screen.width / 2)
+            {
+                tch = Input.GetTouch(0);
+                StartSwipe = tch.rawPosition;
+            }
+            else if (Input.touchCount == 2)
+            {
+                if (Input.GetTouch(0).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(0);
+                else if (Input.GetTouch(1).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(1);
+            }
+
+            if (tch.phase == TouchPhase.Began)
+            {
+                StartSwipe = tch.rawPosition;
+            }
             else if (tch.phase == TouchPhase.Moved)
             {
-                xmouse = tch.position.x - swipeStartPos.x;
-                ymouse = tch.position.y - swipeStartPos.y;
+                ViewVector.x = tch.position.x - StartSwipe.x;
+                ViewVector.y = tch.position.y - StartSwipe.y;
 
-                xmouse *= Time.deltaTime * Sensitivity / 10;
-                ymouse *= Time.deltaTime * Sensitivity / 10;
+                ViewVector.x *= Time.deltaTime * Sensitivity / 100;
+                ViewVector.y *= Time.deltaTime * Sensitivity / 100;
 
-                swipeStartPos = tch.position;
+                StartSwipe = tch.position;
             }
-            else
-            {
-                xmouse = 0f;
-                ymouse = 0f;
-            }*/
+            else ViewVector = Vector2.zero;
         }
         else
         {
             ViewVector.x = ViewStick.Horizontal * Time.deltaTime * Sensitivity;
             ViewVector.y = ViewStick.Vertical * Time.deltaTime * Sensitivity;
         }
+
         transform.Rotate(Vector3.up * ViewVector.x);
         yRotation -= ViewVector.y;
         yRotation = Mathf.Clamp(yRotation, -85f, 60f);
         CameraTarget.localRotation = Quaternion.Euler(yRotation, 0, 0);
+        #endregion
     }
 
     public void SetSwipeTouched(bool state)
     {
-        swipeTouched = state;
+        isTouched = state;
     }
 }
