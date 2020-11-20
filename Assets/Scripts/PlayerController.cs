@@ -10,19 +10,22 @@ public class PlayerController : MonoBehaviour
 
     public VariableJoystick MoveStick, ViewStick;
 
-    public int Sensitivity = 100, MoveSpeed = 10;
+    public int Sensitivity = 100, MoveSpeed = 10, JumpForce;
     public Transform CameraTarget;
+    public LayerMask JumpLayer;
 
-    bool isGround = false, isTouched = false;
+    bool isTouched = false;
     float yRotation;
-    public static Vector3 MoveVector;
-    public static Vector2 ViewVector, StartSwipe;
+    static Vector3 MoveVector;
+    static Vector2 ViewVector, StartSwipe;
     Rigidbody rb;
+    CapsuleCollider capsule;
     Touch tch;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        capsule = GetComponent<CapsuleCollider>();
     }
 
     void Update()
@@ -35,16 +38,17 @@ public class PlayerController : MonoBehaviour
         #region viewing
         if (ViewMode == viewMode.Swipe && isTouched)
         {
-            if (Input.touchCount == 1 && Input.GetTouch(0).rawPosition.x > Screen.width / 2)
-            {
-                tch = Input.GetTouch(0);
-                StartSwipe = tch.rawPosition;
-            }
-            else if (Input.touchCount == 2)
-            {
-                if (Input.GetTouch(0).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(0);
-                else if (Input.GetTouch(1).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(1);
-            }
+            tch = Input.GetTouch(Input.touchCount - 1);
+            //if (Input.touchCount == 1 && Input.GetTouch(0).rawPosition.x > Screen.width / 2)
+            //{
+            //    tch = Input.GetTouch(0);
+            //    StartSwipe = tch.rawPosition;
+            //}
+            //else if (Input.touchCount == 2)
+            //{
+            //    if (Input.GetTouch(0).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(0);
+            //    else if (Input.GetTouch(1).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(1);
+            //}
 
             if (tch.phase == TouchPhase.Began)
             {
@@ -55,8 +59,8 @@ public class PlayerController : MonoBehaviour
                 ViewVector.x = tch.position.x - StartSwipe.x;
                 ViewVector.y = tch.position.y - StartSwipe.y;
 
-                ViewVector.x *= Time.deltaTime * Sensitivity / 100;
-                ViewVector.y *= Time.deltaTime * Sensitivity / 100;
+                ViewVector.x *= Time.deltaTime * Sensitivity / 10;
+                ViewVector.y *= Time.deltaTime * Sensitivity / 10;
 
                 StartSwipe = tch.position;
             }
@@ -73,10 +77,21 @@ public class PlayerController : MonoBehaviour
         yRotation = Mathf.Clamp(yRotation, -85f, 60f);
         CameraTarget.localRotation = Quaternion.Euler(yRotation, 0, 0);
         #endregion
+
+        
     }
 
     public void SetSwipeTouched(bool state)
     {
         isTouched = state;
+    }
+
+    public void Jump()
+    {
+        if (Physics.CheckSphere(transform.position - Vector3.up, .1f, JumpLayer.value))
+        {
+            rb.AddForce(Vector3.up * JumpForce);
+            Debug.Log("jump");
+        }
     }
 }
