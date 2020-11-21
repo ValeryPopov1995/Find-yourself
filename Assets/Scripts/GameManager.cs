@@ -8,4 +8,9 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 20;
     }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 }
