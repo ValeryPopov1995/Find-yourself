@@ -3,9 +3,9 @@
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    public enum moveMode { FixedStick, DinamicStick, FloatingStick };
+    public enum moveMode { FixedStick, DynamicStick, FloatingStick };
     public moveMode MoveMode = moveMode.FixedStick;
-    public enum viewMode { FixedStick, DinamicStick, FloatingStick, Swipe };
+    public enum viewMode { FixedStick, DynamicStick, FloatingStick, Swipe };
     public viewMode ViewMode = viewMode.FixedStick;
 
     public VariableJoystick MoveStick, ViewStick;
@@ -38,18 +38,6 @@ public class PlayerController : MonoBehaviour
         #region viewing
         if (ViewMode == viewMode.Swipe && isTouched)
         {
-            tch = Input.GetTouch(Input.touchCount - 1);
-            //if (Input.touchCount == 1 && Input.GetTouch(0).rawPosition.x > Screen.width / 2)
-            //{
-            //    tch = Input.GetTouch(0);
-            //    StartSwipe = tch.rawPosition;
-            //}
-            //else if (Input.touchCount == 2)
-            //{
-            //    if (Input.GetTouch(0).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(0);
-            //    else if (Input.GetTouch(1).rawPosition.x > Screen.width / 2) tch = Input.GetTouch(1);
-            //}
-
             if (tch.phase == TouchPhase.Began)
             {
                 StartSwipe = tch.rawPosition;
@@ -77,13 +65,12 @@ public class PlayerController : MonoBehaviour
         yRotation = Mathf.Clamp(yRotation, -85f, 60f);
         CameraTarget.localRotation = Quaternion.Euler(yRotation, 0, 0);
         #endregion
-
-        
     }
 
     public void SetSwipeTouched(bool state)
     {
         isTouched = state;
+        if (state) tch = Input.GetTouch(Input.touchCount - 1);
     }
 
     public void Jump()
